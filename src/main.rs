@@ -1,5 +1,8 @@
 use std::cell::RefCell;
 
+mod domain;
+mod v1;
+
 struct UserModel {
     first_name: String,
     last_name: String,
@@ -69,6 +72,57 @@ enum Conector<T> {
     Or(Filters<T>, Option<Box<Conector<T>>>),
 }
 
+impl<T> Conector<T> {
+    fn apply(&self, value: &T) -> bool {
+        match self {
+            Conector::And(items, conector) => {
+                let has_match = items.iter().all(|f| f(&value));
+
+                if !has_match {
+                    return false;
+                }
+
+                match conector {
+                    Some(conector) => conector.apply(value),
+                    None => has_match,
+                }
+            }
+            Conector::Or(items, conector) => {
+                let has_match = items.iter().any(|f| f(&value));
+
+                if has_match {
+                    return true;
+                }
+
+                match conector {
+                    Some(conector) => conector.apply(value),
+                    None => has_match,
+                }
+            }
+        }
+    }
+
+    fn inspect(self) {
+        if let Conector::And(_, _) = self {
+            println!("AND CONNECTOR");
+        }
+
+        if let Conector::Or(_, _) = self {
+            println!("OR CONNECTOR");
+        }
+
+        match self {
+            Conector::And(items, connect) | Conector::Or(items, connect) => {
+                println!("FILTERS LENGHT {}", items.len());
+
+                if let Some(connector) = connect {
+                    connector.inspect();
+                }
+            }
+        }
+    }
+}
+
 struct UserSelector<'a> {
     manager: &'a UserManager,
     filters: Conector<UserModel>,
@@ -94,13 +148,49 @@ impl<'a> UserSelector<'a> {
         self
     }
 
+    fn where_last_name(mut self, value: &str) -> Self {
+        let value = value.to_string();
+
+        match &mut self.filters {
+            Conector::And(f, _) | Conector::Or(f, _) => {
+                f.push(Box::new(move |u| u.last_name == value));
+            }
+        }
+
+        self
+    }
+
+    fn where_age(mut self, value: u8) -> Self {
+        match &mut self.filters {
+            Conector::And(f, _) | Conector::Or(f, _) => {
+                f.push(Box::new(move |u| u.age == value));
+            }
+        }
+
+        self
+    }
+
     fn or(mut self) -> Self {
         self.filters = Conector::Or(Vec::new(), Some(Box::new(self.filters)));
 
         self
     }
 
-    fn inspect(self) -> () {}
+    fn inspect(self) {
+        self.filters.inspect();
+    }
+
+    fn for_each<F>(self, mut f: F)
+    where
+        F: FnMut(&UserModel),
+    {
+        let borrowed = self.manager._users.borrow();
+
+        borrowed
+            .iter()
+            .filter(|u| self.filters.apply(*u))
+            .for_each(|u| f(u));
+    }
 }
 
 struct UserManager {
@@ -126,7 +216,9 @@ impl UserManager {
         self
     }
 
-    fn select() {}
+    fn select(&self) -> UserSelector<'_> {
+        UserSelector::new(self)
+    }
 }
 
 fn main() {
@@ -135,25 +227,33 @@ fn main() {
     let mut builder = manager.builder();
 
     builder
-        .set_first_name("Franco".to_string())
-        .set_last_name("Carrasco".to_string());
+        .set_first_name("Hur".to_string())
+        .set_last_name("C".to_string());
 
     manager.create(builder);
 
-    let users = manager._users.borrow();
+    let mut builder = manager.builder();
 
-    let user = users.first();
+    builder
+        .set_last_name("C".to_string())
+        .set_first_name("Bru".to_string())
+        .set_age(20);
 
-    if let Some(user) = user {
-        println!("The user is {}", user.first_name);
-    } else {
-        println!("Hello, world!");
-    }
+    manager.create(builder);
 
-    let selector = UserSelector::new(&manager);
+    let mut builder = manager.builder();
 
-    selector
-        .where_first_name("Franco")
-        .or()
-        .where_first_name("Mish");
+    builder
+        .set_first_name("Ignacio".to_string())
+        .set_last_name("Flores".to_string())
+        .set_age(20);
+
+    manager.create(builder);
+
+    manager
+        .select()
+        // .where_first_name("Hur")
+        // .or()
+        .where_age(20)
+        .for_each(|user| println!("USER {}", user.first_name));
 }
