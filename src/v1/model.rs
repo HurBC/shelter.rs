@@ -5,10 +5,10 @@ use chrono::{DateTime, NaiveDate, Utc};
 use crate::v1::traits::Builder;
 
 pub struct UserModel {
-    first_name: String,
-    last_name: String,
-    birth_date: Option<NaiveDate>,
-    created_at: DateTime<Utc>,
+    pub first_name: String,
+    pub last_name: String,
+    pub birth_date: Option<NaiveDate>,
+    pub created_at: DateTime<Utc>,
 }
 
 pub struct UserBuilder {

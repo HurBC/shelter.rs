@@ -1,13 +1,13 @@
 type Predicate<T> = Box<dyn Fn(&T) -> bool>;
 type Filters<T> = Vec<Predicate<T>>;
 
-enum Connector<T> {
+pub enum Connector<T> {
     And(Filters<T>, Option<Box<Connector<T>>>),
     Or(Filters<T>, Option<Box<Connector<T>>>),
 }
 
 impl<T> Connector<T> {
-    fn apply(&self, value: &T) -> bool {
+    pub fn apply(&self, value: &T) -> bool {
         match self {
             Connector::And(items, conector) => {
                 let has_match = items.iter().all(|f| f(&value));

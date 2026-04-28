@@ -1,5 +1,5 @@
 mod conector;
-mod manager;
+pub mod manager;
 mod model;
 mod selector;
-mod traits;
+pub mod traits;

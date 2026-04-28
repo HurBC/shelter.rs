@@ -7,7 +7,7 @@ use crate::v1::{
 };
 
 pub struct UserManager {
-    _users: RefCell<Vec<UserModel>>,
+    pub(super) _users: RefCell<Vec<UserModel>>,
     _current_user: Option<UserModel>,
 }
 
