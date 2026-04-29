@@ -76,4 +76,10 @@ impl<'a> Selector<UserModel> for UserSelector<'a> {
             .filter(|u| self.filters.apply(*u))
             .for_each(f);
     }
+
+    fn and(mut self) -> Self {
+        self.filters = Connector::And(Vec::new(), Some(Box::new(self.filters)));
+
+        self
+    }
 }

@@ -5,6 +5,7 @@ use crate::v1::{
 
 mod domain;
 mod v1;
+mod v2;
 
 fn main() {
     let manager = UserManager::new();

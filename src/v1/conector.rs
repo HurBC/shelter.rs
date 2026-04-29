@@ -10,7 +10,7 @@ impl<T> Connector<T> {
     pub fn apply(&self, value: &T) -> bool {
         match self {
             Connector::And(items, conector) => {
-                let has_match = items.iter().all(|f| f(&value));
+                let has_match = items.iter().all(|f| f(value));
 
                 if !has_match {
                     return false;
@@ -22,7 +22,7 @@ impl<T> Connector<T> {
                 }
             }
             Connector::Or(items, conector) => {
-                let has_match = items.iter().any(|f| f(&value));
+                let has_match = items.iter().any(|f| f(value));
 
                 if has_match {
                     return true;

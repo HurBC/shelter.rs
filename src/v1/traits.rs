@@ -17,6 +17,7 @@ pub trait Manager<TModel> {
 
 pub trait Selector<TModel> {
     fn or(self) -> Self;
+    fn and(self) -> Self;
     fn for_each<F>(self, f: F)
     where
         F: FnMut(&TModel);

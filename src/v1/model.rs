@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use chrono::{DateTime, NaiveDate, Utc};
 
 use crate::v1::traits::Builder;
