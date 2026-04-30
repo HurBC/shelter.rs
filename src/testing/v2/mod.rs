@@ -1,4 +1,3 @@
-pub mod builder;
-pub mod logical;
 pub mod manager;
+pub mod model;
 pub mod selector;

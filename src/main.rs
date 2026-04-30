@@ -4,10 +4,15 @@ use crate::v1::{
 };
 
 mod domain;
+mod testing;
 mod v1;
 mod v2;
 
 fn main() {
+    testing::example();
+}
+
+fn v1_example() {
     let manager = UserManager::new();
 
     let mut builder = manager.builder();
