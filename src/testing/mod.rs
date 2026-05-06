@@ -28,16 +28,17 @@ pub fn example() {
 
     selector
         .filters()
-        .push(Box::new(move |u| u.first_name == "Hur"))
+        .push(move |u| u.first_name == "Hur")
+        .and()
+        .push(move |u| u.first_name == "Bru")
         .or()
-        .push(Box::new(move |u| u.first_name == "mish"))
-        .push(Box::new(move |u| u.first_name == "Bru"));
+        .not()
+        .push(move |u| u.last_name == "C");
+    // let user = selector.first();
+    //
+    // if let Some(user) = user {
+    //     println!("USER {}", user.first_name)
+    // }
 
-    let user = selector.last();
-
-    if let Some(user) = user {
-        println!("USER {}", user.first_name)
-    }
-
-    // selector.for_each(|u| println!("User {}", u.first_name));
+    selector.for_each(|u| println!("User {}", u.first_name));
 }

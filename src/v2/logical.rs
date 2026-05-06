@@ -13,28 +13,22 @@ impl<T> Connector<T> {
     fn apply(&self, value: &T) -> bool {
         match self {
             Connector::And(items, connector) => {
-                let matched = items.iter().all(|f| f(value));
+                let result = connector.as_ref().is_none_or(|c| c.apply(value));
 
-                if !matched {
-                    return matched;
+                if !result {
+                    return false;
                 }
 
-                match connector {
-                    Some(items) => items.apply(value),
-                    None => matched,
-                }
+                items.iter().all(|f| f(value))
             }
             Connector::Or(items, connector) => {
-                let matched = items.iter().any(|f| f(value));
+                let result = connector.as_ref().is_none_or(|c| c.apply(value));
 
-                if matched {
-                    return matched;
+                if result {
+                    return true;
                 }
 
-                match connector {
-                    Some(items) => items.apply(value),
-                    None => matched,
-                }
+                items.iter().all(|f| f(value))
             }
             Connector::Not(items, connector) => {
                 let matched = items.iter().all(|f| !f(value));
@@ -63,10 +57,22 @@ impl<T> Filters<T> {
         self._filters.apply(value)
     }
 
-    pub fn push(&mut self, predicate: Predicate<T>) -> &mut Self {
+    pub fn push<F>(&mut self, predicate: F) -> &mut Self
+    where
+        F: Fn(&T) -> bool + 'static,
+    {
         match &mut self._filters {
-            Connector::And(items, _) | Connector::Or(items, _) | Connector::Not(items, _) => {
-                items.push(predicate);
+            Connector::And(items, _) | Connector::Or(items, _) => {
+                items.push(Box::new(predicate));
+            }
+            Connector::Not(_, connector) => {
+                if let Some(c) = connector {
+                    match &**c {
+                        Connector::And(items, connector) => todo!(),
+                        Connector::Or(items, connector) => todo!(),
+                        Connector::Not(items, connector) => todo!(),
+                    }
+                }
             }
         }
 
